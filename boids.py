@@ -66,11 +66,11 @@ def update_boids(
         max_speed (float): Maximum speed, speed norms are capped at that value.
         cohesion_factor (float): Scaling factor to the cohesion rule.
         separation_factor (float): Scaling factor to the seperation rule.
-        alignment_factor (float): Description of parameter `alignment_factor`.
-        avoid_factor (float): Description of parameter `avoid_factor`.
+        alignment_factor (float): Scaling factor to the alignment rule.
+        avoid_factor (float): Scaling factor to the edge avoidance.
         margin (int): If a boid is closer than this distance from a border, it will turn around.
         width (int): width of window.
-        height (int): height of windiw.
+        height (int): height of window.
 
     Returns:
         np.ndarray: updated boids.
