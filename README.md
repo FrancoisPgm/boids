@@ -34,7 +34,6 @@ optional arguments:
   --fps FPS             FPS, default=60.
   --show_fps            Show FPS.
   --fullscreen          Show in full screen.
-  --fish                Turn boids into fish.
   --width WIDTH         Window width, ignored if fullscreen, default=1200.
   --height HEIGHT       Window height, ignored if fullscreen, default=800.
   --bg_col BG_COL BG_COL BG_COL
