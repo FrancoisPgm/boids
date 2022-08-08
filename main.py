@@ -1,3 +1,6 @@
+import os
+
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"  # don't show pygame hello message
 import argparse
 import pygame as pg
 import numpy as np
@@ -35,6 +38,19 @@ class BoidSprite(pg.sprite.Sprite):
         self.image = pg.transform.rotate(self.orig_image, -self.ang)
 
 
+def reset_boids(n_boids, width, height, margin, max_speed):
+    boids = np.stack(
+        (
+            np.random.randint(margin, width - margin, n_boids),
+            np.random.randint(margin, height - margin, n_boids),
+            np.random.randn(n_boids) * max_speed,
+            np.random.randn(n_boids) * max_speed,
+        ),
+        axis=1,
+    )
+    return boids
+
+
 def main(args):
     pg.init()
     pg.display.set_caption("Boids")
@@ -49,15 +65,7 @@ def main(args):
 
     screen_width, screen_height = screen.get_size()
 
-    boids = np.stack(
-        (
-            np.random.randint(MARGIN, screen_width - MARGIN, args.n_boids),
-            np.random.randint(MARGIN, screen_height - MARGIN, args.n_boids),
-            np.random.randn(args.n_boids) * args.speed,
-            np.random.randn(args.n_boids) * args.speed,
-        ),
-        axis=1,
-    )
+    boids = reset_boids(args.n_boids, screen_width, screen_height, MARGIN, args.speed)
 
     boid_sprite_group = pg.sprite.Group()
     for i, boid in enumerate(boids):
@@ -72,6 +80,8 @@ def main(args):
         for e in pg.event.get():
             if e.type == pg.QUIT or e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
                 return
+            elif e.type == pg.KEYDOWN and e.key == pg.K_r:
+                boids = reset_boids(args.n_boids, screen_width, screen_height, MARGIN, args.speed)
 
         clock.tick(args.fps)
         boids = update_boids(
