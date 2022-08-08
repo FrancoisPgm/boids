@@ -21,9 +21,9 @@ You can reset the boids during the simulation by pressing the R key.
 
 Some options can be changed with several flags :
 ```
-python main.py --help                                                          [main]
+python main.py --help
 usage: main.py [-h] [--n_boids N_BOIDS] [--fps FPS] [--show_fps] [--fullscreen]
-               [--wrap] [--fish] [--width WIDTH] [--height HEIGHT]
+               [--width WIDTH] [--height HEIGHT]
                [--bg_col BG_COL BG_COL BG_COL] [--boid_col BOID_COL BOID_COL BOID_COL]
                [--speed SPEED]
 
