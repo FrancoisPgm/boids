@@ -115,9 +115,6 @@ if __name__ == "__main__":
     parser.add_argument("--fps", type=int, default=60, help="FPS, default=60.")
     parser.add_argument("--show_fps", action="store_true", help="Show FPS.")
     parser.add_argument("--fullscreen", action="store_true", help="Show in full screen.")
-    parser.add_argument(
-        "--wrap", action="store_true", help="Wrap edges, otherwise edges are walls to be avoided."
-    )
     parser.add_argument("--fish", action="store_true", help="Turn boids into fish.")
     parser.add_argument(
         "--width", type=int, default=1200, help="Window width, ignored if fullscreen, default=1200."

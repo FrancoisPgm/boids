@@ -34,7 +34,6 @@ optional arguments:
   --fps FPS             FPS, default=60.
   --show_fps            Show FPS.
   --fullscreen          Show in full screen.
-  --wrap                Wrap edges, otherwise edges are walls to be avoided.
   --fish                Turn boids into fish.
   --width WIDTH         Window width, ignored if fullscreen, default=1200.
   --height HEIGHT       Window height, ignored if fullscreen, default=800.
