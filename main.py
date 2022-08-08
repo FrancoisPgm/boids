@@ -22,9 +22,9 @@ class BoidSprite(pg.sprite.Sprite):
             self.color = pg.Color(0)
             self.color.hsva = (np.random.randint(0, 360), 90, 90)
         else:
-            color = pg.Color(color)
+            self.color = pg.Color(color)
         pg.draw.polygon(self.image, self.color, ((7, 0), (13, 14), (7, 11), (1, 14), (7, 0)))
-        self.orig_image = self.image.copy()  # pg.transform.rotate(self.image.copy(), -90)
+        self.orig_image = self.image.copy()
         self.rect = self.image.get_rect(center=(x, y))
         self.ang = np.arctan2(dx, -dy) * 180 / np.pi
         self.image = pg.transform.rotate(self.orig_image, -self.ang)
@@ -36,7 +36,7 @@ class BoidSprite(pg.sprite.Sprite):
 
 
 def main(args):
-    pg.init()  # prepare window
+    pg.init()
     pg.display.set_caption("Boids")
 
     # setup fullscreen or window mode
