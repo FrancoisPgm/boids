@@ -1,6 +1,8 @@
 # boids
 Implementation of the boids algo, with a pygame visualization.
 
+![Example GIF](example.gif)
+
 ### Instructions
 
 Clone the repo, and install dependencies:
