@@ -2,15 +2,33 @@ import numpy as np
 
 
 def get_seen_boids(boid_id, boids, perception):
-    """Get list of boids closer than perception, with an extra dimension containing distances."""
+    """Get array of boids closer than perception,
+    with an extra dimension containing squared distances."""
     boid = boids[boid_id]
-    other_boids = np.delete(boids, boid_id, axis=0)
+    other_boids = boids  # np.delete(boids, boid_id, axis=0)
     dists_squared = (boid[0] - other_boids[:, 0]) ** 2 + (boid[1] - other_boids[:, 1]) ** 2
     seen_boids = other_boids[dists_squared < perception**2]
     seen_boids = np.concatenate(
         (seen_boids, np.expand_dims(dists_squared[dists_squared < perception**2], 1)), axis=1
     )
     return seen_boids
+
+
+def get_seen_predators(boid, predators, perception):
+    """Get array of predators closer than perception,
+    with an extra dimension containing squared distances."""
+    dists_squared = (boid[0] - predators[:, 0]) ** 2 + (boid[1] - predators[:, 1]) ** 2
+    seen_predators = predators[dists_squared < perception**2]
+    seen_predators = np.concatenate(
+        (seen_predators, np.expand_dims(dists_squared[dists_squared < perception**2], 1)), axis=1
+    )
+    return seen_predators
+
+
+def avoid_predators(boid, predators, avoid_factor):
+    acc = 0.5 * (boid[:2] - predators[:, :2].mean(axis=0))
+    acc += 0.5 * (boid[2:4] - predators[:, 2:4].mean(axis=0))
+    return avoid_factor * acc
 
 
 def avoid_edges(boids, margin, width, height, avoid_factor):
@@ -47,12 +65,15 @@ def alignment(boid, seen_boids, alignment_factor):
 def update_boids(
     boids,
     perception,
+    predators,
+    pred_perception,
     safe_space,
     max_speed,
     cohesion_factor,
     separation_factor,
     alignment_factor,
     avoid_factor,
+    avoid_pred_factor,
     margin,
     width,
     height,
@@ -83,6 +104,10 @@ def update_boids(
             total_acc[i] += cohesion(boid, seen_boids, cohesion_factor)
             total_acc[i] += separation(boid, seen_boids, separation_factor, safe_space)
             total_acc[i] += alignment(boid, seen_boids, alignment_factor)
+        if len(predators):
+            seen_predators = get_seen_predators(boid, predators, pred_perception)
+            if len(seen_predators):
+                total_acc[i] += avoid_predators(boid, seen_predators, avoid_pred_factor)
         boids[i, 2:] += total_acc[i]
         if boids[i, 2] ** 2 + boids[i, 3] ** 2 > max_speed**2:
             boids[i, 2:] = max_speed * boids[i, 2:] / np.sqrt(boids[i, 2] ** 2 + boids[i, 3] ** 2)

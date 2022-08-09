@@ -7,9 +7,11 @@ import numpy as np
 from boids import update_boids
 
 PERCEPTION = 75
+PRED_PERCEPTION = 100
 MARGIN = 50
 SAFE_SPACE = 20
-AVOID_FACTOR = 1  # to avoid edges
+AVOID_FACTOR = 1
+AVOID_PRED_FACTOR = 0.05
 COHESION_FACTOR = 0.0005
 SEPARATION_FACTOR = 0.05
 ALIGNMENT_FACTOR = 0.05
@@ -61,7 +63,7 @@ def main(args):
         screen = pg.display.set_mode(currentRez, pg.SCALED | pg.NOFRAME | pg.FULLSCREEN, vsync=1)
         pg.mouse.set_visible(False)
     else:
-        screen = pg.display.set_mode((args.width, args.height), pg.RESIZABLE | pg.SCALED, vsync=1)
+        screen = pg.display.set_mode((args.width, args.height), pg.RESIZABLE)  # , vsync=1)
 
     screen_width, screen_height = screen.get_size()
 
@@ -77,25 +79,40 @@ def main(args):
 
     # main loop
     while True:
-        for e in pg.event.get():
-            if e.type == pg.QUIT or e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
+
+        for event in pg.event.get():
+            if event.type == pg.QUIT or event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 return
-            elif e.type == pg.KEYDOWN and e.key == pg.K_r:
+            elif event.type == pg.KEYDOWN and event.key == pg.K_r:
                 boids = reset_boids(args.n_boids, screen_width, screen_height, MARGIN, args.speed)
+            elif event.type == pg.VIDEORESIZE:
+                screen_width, screen_height = screen.get_size()
+
+        predators = []
+        mouse_speed = 0
+        mouse_x, mouse_y = pg.mouse.get_pos()
+        if mouse_x and mouse_y and mouse_x < screen_width and mouse_y < screen_height:
+            mouse_dx, mouse_dy = pg.mouse.get_rel()
+            mouse_speed = PRED_PERCEPTION + np.sqrt(mouse_dx**2 + mouse_dy**2)
+            predators.append([mouse_x, mouse_y, mouse_dx, mouse_dy])
+            predators = np.array(predators)
 
         clock.tick(args.fps)
         boids = update_boids(
-            boids,
-            PERCEPTION,
-            SAFE_SPACE,
-            args.speed,
-            COHESION_FACTOR,
-            SEPARATION_FACTOR,
-            ALIGNMENT_FACTOR,
-            AVOID_FACTOR,
-            MARGIN,
-            screen_width,
-            screen_height,
+            boids=boids,
+            perception=PERCEPTION,
+            predators=predators,
+            pred_perception=mouse_speed,
+            safe_space=SAFE_SPACE,
+            max_speed=args.speed,
+            cohesion_factor=COHESION_FACTOR,
+            separation_factor=SEPARATION_FACTOR,
+            alignment_factor=ALIGNMENT_FACTOR,
+            avoid_factor=AVOID_FACTOR,
+            avoid_pred_factor=AVOID_PRED_FACTOR,
+            margin=MARGIN,
+            width=screen_width,
+            height=screen_height,
         )
         screen.fill(args.bg_col)
         boid_sprite_group.update(boids)
