@@ -12,7 +12,7 @@ MARGIN = 50
 SAFE_SPACE = 20
 AVOID_FACTOR = 1
 AVOID_PRED_FACTOR = 0.05
-COHESION_FACTOR = 0.0005
+COHESION_FACTOR = 0.005
 SEPARATION_FACTOR = 0.05
 ALIGNMENT_FACTOR = 0.05
 
@@ -24,10 +24,11 @@ class BoidSprite(pg.sprite.Sprite):
         self.image = pg.Surface((15, 15)).convert()  # TODO: use non hardcoded size
         self.image.set_colorkey(0)
         if color is None:
-            self.color = pg.Color(0)
-            self.color.hsva = (np.random.randint(0, 360), 90, 90)
-        else:
-            self.color = pg.Color(color)
+            color = pg.Color(0)
+            color.hsva = (np.random.randint(0, 360), 90, 90)
+            color = (color.r, color.g, color.b)
+        self.color = pg.Color(color)
+
         pg.draw.polygon(self.image, self.color, ((7, 0), (13, 14), (7, 11), (1, 14), (7, 0)))
         self.orig_image = self.image.copy()
         self.rect = self.image.get_rect(center=(x, y))
