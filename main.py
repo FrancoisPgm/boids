@@ -21,23 +21,36 @@ class BoidSprite(pg.sprite.Sprite):
     def __init__(self, id, x, y, dx, dy, color=None):
         super().__init__()
         self.id = id
+        self.ang = np.arctan2(dx, -dy) * 180 / np.pi
         self.image = pg.Surface((15, 15)).convert()  # TODO: use non hardcoded size
         self.image.set_colorkey(0)
+        self.angular_color = color == "angular"
         if color is None:
             color = pg.Color(0)
             color.hsva = (np.random.randint(0, 360), 90, 90)
+            color = (color.r, color.g, color.b)
+        elif self.angular_color:
+            color = pg.Color(0)
+            color.hsva = (self.ang % 360, 90, 90)
             color = (color.r, color.g, color.b)
         self.color = pg.Color(color)
 
         pg.draw.polygon(self.image, self.color, ((7, 0), (13, 14), (7, 11), (1, 14), (7, 0)))
         self.orig_image = self.image.copy()
         self.rect = self.image.get_rect(center=(x, y))
-        self.ang = np.arctan2(dx, -dy) * 180 / np.pi
         self.image = pg.transform.rotate(self.orig_image, -self.ang)
 
     def update(self, boids):
         self.rect.center = boids[self.id, :2]
         self.ang = np.arctan2(boids[self.id, 2], -boids[self.id, 3]) * 180 / np.pi
+        if self.angular_color:
+            color = pg.Color(0)
+            color.hsva = (self.ang % 360, 90, 90)
+            color = (color.r, color.g, color.b)
+            self.color = pg.Color(color)
+            pg.draw.polygon(
+                self.orig_image, self.color, ((7, 0), (13, 14), (7, 11), (1, 14), (7, 0))
+            )
         self.image = pg.transform.rotate(self.orig_image, -self.ang)
 
 
@@ -71,8 +84,9 @@ def main(args):
     boids = reset_boids(args.n_boids, screen_width, screen_height, MARGIN, args.speed)
 
     boid_sprite_group = pg.sprite.Group()
+    color = "angular" if args.ang_col else args.boid_col
     for i, boid in enumerate(boids):
-        boid_sprite_group.add(BoidSprite(i, boid[0], boid[1], boid[2], boid[3], color=args.boid_col))
+        boid_sprite_group.add(BoidSprite(i, boid[0], boid[1], boid[2], boid[3], color=color))
 
     clock = pg.time.Clock()
     if args.show_fps:
@@ -152,6 +166,11 @@ if __name__ == "__main__":
         default=None,
         nargs=3,
         help="Color of boids in RGB, default is random.",
+    )
+    parser.add_argument(
+        "--ang_col",
+        action="store_true",
+        help="Change color of boids according to their angle, if set it overrides boid_col.",
     )
     parser.add_argument("--speed", "-s", type=int, default=15, help="Maximum speed, defult=15.")
     args = parser.parse_args()

@@ -25,9 +25,8 @@ Some options can be changed with several flags :
 ```
 python main.py --help
 usage: main.py [-h] [--n_boids N_BOIDS] [--fps FPS] [--show_fps] [--fullscreen]
-               [--width WIDTH] [--height HEIGHT]
-               [--bg_col BG_COL BG_COL BG_COL] [--boid_col BOID_COL BOID_COL BOID_COL]
-               [--speed SPEED]
+               [--width WIDTH] [--height HEIGHT] [--bg_col BG_COL BG_COL BG_COL]
+               [--boid_col BOID_COL BOID_COL BOID_COL] [--ang_col] [--speed SPEED]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -42,6 +41,8 @@ optional arguments:
                         Background color in RGB, default is balck.
   --boid_col BOID_COL BOID_COL BOID_COL
                         Color of boids in RGB, default is random.
+  --ang_col             Change color of boids according to their angle, if set it
+                        overrides boid_col.
   --speed SPEED, -s SPEED
                         Maximum speed, defult=15.
 ```
