@@ -18,8 +18,9 @@ To run the simulation:
 python3 main.py
 ```
 
-You can quit the simulation by pressing the escape key.
-You can reset the boids during the simulation by pressing the R key.
+You can quit the simulation by pressing the escape key.\
+You can reset the boids during the simulation by pressing the R key.\
+You can show sliders to control the boids parameters by pressing the S key, and hide the sliders by pressing it again.
 
 Some options can be changed with several flags :
 ```

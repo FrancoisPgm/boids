@@ -1,10 +1,13 @@
 import os
 
-os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"  # don't show pygame hello message
+# don't show pygame hello message
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
 import argparse
 import pygame as pg
 import numpy as np
 from boids import update_boids
+from pygame_widgets.slider import Slider
+import pygame_widgets
 
 PERCEPTION = 75
 PRED_PERCEPTION = 100
@@ -15,6 +18,28 @@ AVOID_PRED_FACTOR = 0.05
 COHESION_FACTOR = 0.005
 SEPARATION_FACTOR = 0.05
 ALIGNMENT_FACTOR = 0.05
+
+
+def scaling_func(x):
+    return (np.exp(x * 4) - 1) / (np.exp(2) - 1)
+
+
+def make_sliders(screen, screen_width, screen_height):
+    slider_width = int(0.2 * screen_width)
+    slider_height = min(15, 0.2 * screen_height)
+    slider_x_margin = int(0.2 * 0.2 * screen_width)
+    slider_y = int(0.9 * screen_height)
+    args = (slider_width, slider_height)
+    kwargs = {"min": 0, "max": 1, "step": 0.01, "handleColour": (100, 100, 100)}
+    cohesion_slider = Slider(screen, slider_x_margin, slider_y, *args, **kwargs)
+    alignmnet_slider = Slider(screen, 2 * slider_x_margin + slider_width, slider_y, *args, **kwargs)
+    separation_slider = Slider(
+        screen, 3 * slider_x_margin + 2 * slider_width, slider_y, *args, **kwargs
+    )
+    perception_slider = Slider(
+        screen, 4 * slider_x_margin + 3 * slider_width, slider_y, *args, **kwargs
+    )
+    return cohesion_slider, alignmnet_slider, separation_slider, perception_slider
 
 
 class BoidSprite(pg.sprite.Sprite):
@@ -68,6 +93,7 @@ def reset_boids(n_boids, width, height, margin, max_speed):
 
 
 def main(args):
+    global COHESION_FACTOR
     pg.init()
     pg.display.set_caption("Boids")
 
@@ -80,6 +106,9 @@ def main(args):
         screen = pg.display.set_mode((args.width, args.height), pg.RESIZABLE)  # , vsync=1)
 
     screen_width, screen_height = screen.get_size()
+    cohesion_slider, alignment_slider, separation_slider, perception_slider = make_sliders(
+        screen, screen_width, screen_height
+    )
 
     boids = reset_boids(args.n_boids, screen_width, screen_height, MARGIN, args.speed)
 
@@ -89,19 +118,27 @@ def main(args):
         boid_sprite_group.add(BoidSprite(i, boid[0], boid[1], boid[2], boid[3], color=color))
 
     clock = pg.time.Clock()
-    if args.show_fps:
-        font = pg.font.Font(None, 30)
+    font = pg.font.Font(None, 25)
+    show_sliders = False
 
     # main loop
     while True:
-
-        for event in pg.event.get():
+        events = pg.event.get()
+        for event in events:
             if event.type == pg.QUIT or event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 return
             elif event.type == pg.KEYDOWN and event.key == pg.K_r:
                 boids = reset_boids(args.n_boids, screen_width, screen_height, MARGIN, args.speed)
+            elif event.type == pg.KEYDOWN and event.key == pg.K_s:
+                show_sliders = not show_sliders
             elif event.type == pg.VIDEORESIZE:
                 screen_width, screen_height = screen.get_size()
+                # TODO: reposition and rescale sliders
+
+        cohesion_fact = scaling_func(cohesion_slider.getValue()) * COHESION_FACTOR
+        alignment_fact = scaling_func(alignment_slider.getValue()) * ALIGNMENT_FACTOR
+        separation_fact = scaling_func(separation_slider.getValue()) * SEPARATION_FACTOR
+        perception = perception_slider.getValue() * 2 * PERCEPTION
 
         predators = []
         mouse_speed = 0
@@ -115,14 +152,14 @@ def main(args):
         clock.tick(args.fps)
         boids = update_boids(
             boids=boids,
-            perception=PERCEPTION,
+            perception=perception,
             predators=predators,
             pred_perception=mouse_speed,
             safe_space=SAFE_SPACE,
             max_speed=args.speed,
-            cohesion_factor=COHESION_FACTOR,
-            separation_factor=SEPARATION_FACTOR,
-            alignment_factor=ALIGNMENT_FACTOR,
+            cohesion_factor=cohesion_fact,
+            separation_factor=separation_fact,
+            alignment_factor=alignment_fact,
             avoid_factor=AVOID_FACTOR,
             avoid_pred_factor=AVOID_PRED_FACTOR,
             margin=MARGIN,
@@ -136,6 +173,25 @@ def main(args):
         if args.show_fps:
             screen.blit(font.render(str(int(clock.get_fps())), True, [0, 200, 0]), (8, 8))
 
+        if show_sliders:
+            pygame_widgets.update(events)
+            text_y = cohesion_slider.getY() + int(1.5 * cohesion_slider.getHeight())
+            screen.blit(
+                font.render(f"cohesion {cohesion_fact:.2e}", True, [100, 100, 100]),
+                (cohesion_slider.getX() + int(0.2 * cohesion_slider.getWidth()), text_y),
+            )
+            screen.blit(
+                font.render(f"alignment {alignment_fact:.2e}", True, [100, 100, 100]),
+                (alignment_slider.getX() + int(0.2 * alignment_slider.getWidth()), text_y),
+            )
+            screen.blit(
+                font.render(f"separation {separation_fact:.2e}", True, [100, 100, 100]),
+                (separation_slider.getX() + int(0.2 * separation_slider.getWidth()), text_y),
+            )
+            screen.blit(
+                font.render(f"perception {perception}", True, [100, 100, 100]),
+                (perception_slider.getX() + int(0.2 * perception_slider.getWidth()), text_y),
+            )
         pg.display.update()
 
 
